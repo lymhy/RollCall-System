@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">点名系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f4f4f9 0%, #e0e0e0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            min-width: 320px;
+            text-align: center;
+            margin: 1rem;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: clamp(1.75rem, 5vw, 2.25rem);
+            font-weight: 700;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem;
+            border: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            min-width: 120px;
+            min-height: 48px;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        #startRollCall {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        #startRollCall:hover {
+            background-color: #2563eb;
+        }
+
+        #pauseRollCall {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        #pauseRollCall:hover {
+            background-color: #d97706;
+        }
+
+        #manageNamesBtn {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        #manageNamesBtn:hover {
+            background-color: #d97706;
+        }
+
+        #importNamesBtn {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        #importNamesBtn:hover {
+            background-color: #16a34a;
+        }
+
+        #showHistoryBtn {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        #showHistoryBtn:hover {
+            background-color: #4b5563;
+        }
+
+        #showLogBtn {
+            background-color: #9ca3af;
+            color: white;
+        }
+
+        #showLogBtn:hover {
+            background-color: #6b7280;
+        }
+
+        #deleteLogBtn, #clearHistoryBtn, #batchDeleteBtn {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        #deleteLogBtn:hover, #clearHistoryBtn:hover, #batchDeleteBtn:hover {
+            background-color: #dc2626;
+        }
+
+        #settingsBtn {
+            background-color: #8b5cf6;
+            color: white;
+        }
+
+        #settingsBtn:hover {
+            background-color: #7c3aed;
+        }
+
+        #saveSettingsBtn, #saveEditBtn, #exportNamesBtn {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        #saveSettingsBtn:hover, #saveEditBtn:hover, #exportNamesBtn:hover {
+            background-color: #2563eb;
+        }
+
+        #cancelEditBtn {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        #cancelEditBtn:hover {
+            background-color: #4b5563;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 1.5rem;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 0.5rem;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            font-size: 1.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .close:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #edf2f7;
+            font-size: 0.95rem;
+        }
+
+        td {
+            font-size: 0.9rem;
+        }
+
+        input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            margin: 0.25rem;
+            width: calc(100% - 1.5rem);
+            font-size: 1rem;
+            min-height: 44px;
+        }
+
+        input::placeholder {
+            color: #6b7280;
+            opacity: 0.8;
+        }
+
+        input:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        input[aria-invalid="true"] {
+            border-color: #ef4444;
+        }
+
+        #rollingName {
+            margin: 1rem 0;
+            color: #3b82f6;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .name-item {
+            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            margin: 0.5rem 0;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .name-item.highlight {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            opacity: 1;
+            color: #1e40af;
+            font-weight: bold;
+        }
+
+        .name-item.final {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            color: #dc2626;
+            animation: finalName 0.5s ease-in-out;
+        }
+
+        @keyframes finalName {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .form-group .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .radio-group, .checkbox-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .radio-group h3, .checkbox-group h3 {
+            margin-bottom: 0.75rem;
+            font-size: clamp(1.1rem, 3vw, 1.25rem);
+            font-weight: 600;
+            color: #333;
+        }
+
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .radio-option input[type="radio"], .checkbox-option input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .radio-option label, .checkbox-option label {
+            font-size: clamp(0.95rem, 2.5vw, 1rem);
+            color: #444;
+        }
+
+        .flex-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .flex-container input {
+            flex: 1;
+        }
+
+        #logList, #resultList {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        #logList p, #resultList p {
+            margin-bottom: 0.5rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .pagination button {
+            min-width: 40px;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-modal {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .alert-modal p {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .alert-modal button {
+            min-width: 100px;
+        }
+
+        @media (max-width: 600px) {
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.25rem;
+                padding: 0.5rem;
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem;
+                border: none;
+                font-size: 0.9rem;
+            }
+
+            td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-right: 0.5rem;
+                color: #333;
+            }
+
+            td:last-child {
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            td:last-child button {
+                min-width: 80px;
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+
+            .container {
+                padding: 1rem;
+                margin: 0.5rem;
+            }
+
+            button {
+                width: 100%;
+                margin: 0.5rem 0;
+                font-size: 0.95rem;
+                min-height: 52px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 3% auto;
+                padding: 1rem;
+                max-height: 90vh;
+            }
+
+            .close {
+                font-size: 1.5rem;
+                padding: 0.75rem;
+            }
+
+            input {
+                font-size: 0.95rem;
+                min-height: 48px;
+            }
+
+            .flex-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .flex-container input, .flex-container button {
+                width: 100%;
+                min-height: 48px;
+            }
+
+            .radio-option label, .checkbox-option label {
+                font-size: 0.9rem;
+            }
+
+            #rollingName {
+                min-height: 150px;
+            }
+
+            .name-item {
+                font-size: 1rem;
+            }
+
+            .name-item.highlight {
+                font-size: 1.25rem;
+            }
+
+            .name-item.final {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+                min-height: 48px;
+            }
+
+            input {
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                padding: 0.75rem;
+            }
+
+            .form-group label {
+                font-size: 0.9rem;
+            }
+
+            .radio-group h3, .checkbox-group h3 {
+                font-size: 1rem;
+            }
+        }
+
+        @media (min-width: 600px) and (max-width: 900px) {
+            .container {
+                max-width: 700px;
+            }
+
+            button {
+                min-width: 140px;
+                font-size: 1rem;
+            }
+
+            .modal-content {
+                width: 85%;
+                max-width: 550px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="appTitle">点名系统</h1>
+        <div id="rollingName" aria-live="polite"></div>
+        <button id="startRollCall" aria-label="开始随机点名">开始点名</button>
+        <button id="pauseRollCall" aria-label="暂停或继续点名" style="display: none;">暂停点名</button>
+        <button id="manageNamesBtn" aria-label="管理学生名单">管理名单</button>
+        <button id="importNamesBtn" aria-label="导入学生名单">导入名字</button>
+        <button id="showHistoryBtn" aria-label="查看历史点名结果">查看历史点名结果</button>
+        <button id="showLogBtn" aria-label="查看点名日志">查看日志</button>
+        <button id="settingsBtn" aria-label="打开设置">设置</button>
+        <input type="file" id="nameFileInput" accept=".txt" style="display: none;" aria-label="选择要导入的名单文件">
+    </div>
+
+    <div id="manageNamesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="manageNamesTitle">
+        <div class="modal-content">
+            <span class="close" tabindex="0" aria-label="关闭管理名单">×</span>
+            <h2 id="manageNamesTitle">管理名单</h2>
+            <div class="flex-container">
+                <input type="text" id="newNameInputInModal" placeholder="输入新名字" aria-describedby="newNameError">
+                <button id="addNameBtnInModal" aria-label="添加新名字">添加名字</button>
+            </div>
+            <div class="form-group">
+                <span id="newNameError" class="error-message"></span>
+            </div>
+            <input type="text" id="searchNameInput" placeholder="搜索名字或学号..." style="width: 100%; margin: 1rem 0;" aria-label="搜索名字或学号">
+            <button id="batchDeleteBtn" aria-label="批量删除选中的名字">批量删除</button>
+            <button id="exportNamesBtn" aria-label="导出当前名单">导出名单</button>
+            <table id="nameTableInModal" aria-label="学生名单表格">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" aria-label="全选"></th>
+                        <th>序号</th>
+                        <th>学号</th>
+                        <th>名字</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+        <div class="modal-content">
+            <span class="close" tabindex="0" aria-label="关闭历史点名结果">×</span>
+            <h2 id="historyTitle">历史点名结果</h2>
+            <div id="resultList" aria-live="polite"></div>
+            <button id="clearHistoryBtn" aria-label="清空历史点名结果">清空历史</button>
+        </div>
+    </div>
+
+    <div id="logModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="logTitle">
+        <div class="modal-content">
+            <span class="close" tabindex="0" aria-label="关闭点名日志">×</span>
+            <h2 id="logTitle">点名日志</h2>
+            <div id="logList" aria-live="polite"></div>
+            <button id="deleteLogBtn" aria-label="删除所有日志">删除日志</button>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="modal-content">
+            <span class="close" tabindex="0" aria-label="关闭设置">×</span>
+            <h2 id="settingsTitle">设置</h2>
+            <div class="form-group">
+                <label for="languageSelect">语言 / Language:</label>
+                <select id="languageSelect" aria-label="选择语言">
+                    <option value="zh">中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="radio-group">
+                <h3>点名来源</h3>
+                <div class="radio-option">
+                    <input type="radio" id="importedOnly" name="nameSource" value="imported" aria-label="只点名导入名字">
+                    <label for="importedOnly">只点名导入名字</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="builtInOnly" name="nameSource" value="builtIn" aria-label="只使用内置名字点名">
+                    <label for="builtInOnly">只使用内置名字点名</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="mixed" name="nameSource" value="mixed" checked aria-label="内置加导入名字混合点名">
+                    <label for="mixed">内置加导入名字混合点名</label>
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <h3>编号模式</h3>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="fixedId" value="fixed" checked aria-label="固定学号和名字">
+                    <label for="fixedId">固定学号和名字</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="randomId" value="random" aria-label="自动递增序号">
+                    <label for="randomId">自动递增序号</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="useLastLog" value="useLastLog" aria-label="使用上一次日志">
+                    <label for="useLastLog">使用上一次日志（排除上次已点名学生名单）</label>
+                </div>
+            </div>
+            <button id="saveSettingsBtn" aria-label="保存设置">保存</button>
+        </div>
+    </div>
+
+    <div id="editNameModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="editNameTitle">
+        <div class="modal-content">
+            <span class="close" tabindex="0" aria-label="关闭编辑名字">×</span>
+            <h2 id="editNameTitle">编辑名字</h2>
+            <div class="form-group">
+                <label for="editStudentIdInput">学号（固定学号和名字模式下必填，需为数字）:</label>
+                <input type="text" id="editStudentIdInput" placeholder="输入学号" aria-describedby="editStudentIdError">
+                <span id="editStudentIdError" class="error-message"></span>
+            </div>
+            <div class="form-group">
+                <label for="editSerialNoInput">序号（可为空）:</label>
+                <input type="text" id="editSerialNoInput" placeholder="输入序号">
+            </div>
+            <div class="form-group">
+                <label for="editNameInput">名字（必填）:</label>
+                <input type="text" id="editNameInput" placeholder="输入名字" aria-describedby="editNameError">
+                <span id="editNameError" class="error-message"></span>
+            </div>
+            <button id="saveEditBtn" aria-label="保存编辑">保存</button>
+            <button id="cancelEditBtn" aria-label="取消编辑">取消</button>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="alertTitle">
+        <div class="modal-content alert-modal">
+            <h2 id="alertTitle" class="sr-only">提示</h2>
+            <p id="alertMessage"></p>
+            <button id="alertConfirmBtn" aria-label="确认">确认</button>
+            <button id="alertCancelBtn" aria-label="取消" style="display: none;">取消</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 多语言支持
+            const translations = {
+                zh: {
+                    pageTitle: '点名系统',
+                    appTitle: '点名系统',
+                    startRollCall: '开始点名',
+                    pauseRollCall: '暂停点名',
+                    resumeRollCall: '继续点名',
+                    manageNames: '管理名单',
+                    importNames: '导入名字',
+                    showHistory: '查看历史点名结果',
+                    showLog: '查看日志',
+                    settings: '设置',
+                    manageNamesTitle: '管理名单',
+                    addName: '添加名字',
+                    newNamePlaceholder: '输入新名字',
+                    searchPlaceholder: '搜索名字或学号...',
+                    batchDelete: '批量删除',
+                    exportNames: '导出名单',
+                    historyTitle: '历史点名结果',
+                    clearHistory: '清空历史',
+                    logTitle: '点名日志',
+                    deleteLog: '删除日志',
+                    settingsTitle: '设置',
+                    language: '语言',
+                    nameSource: '点名来源',
+                    importedOnly: '只点名导入名字',
+                    builtInOnly: '只使用内置名字点名',
+                    mixed: '内置加导入名字混合点名',
+                    numberingMode: '编号模式',
+                    fixedId: '固定学号和名字',
+                    randomId: '自动递增序号',
+                    useLastLog: '使用上一次日志（排除上次已点名学生名单）',
+                    saveSettings: '保存',
+                    editNameTitle: '编辑名字',
+                    studentIdLabel: '学号（固定学号和名字模式下必填，需为数字）:',
+                    serialNoLabel: '序号（可为空）:',
+                    nameLabel: '名字（必填）:',
+                    edit: '编辑',
+                    delete: '删除',
+                    saveEdit: '保存',
+                    cancelEdit: '取消',
+                    nameEmpty: '名字不能为空！',
+                    nameComma: '名字不能包含逗号！',
+                    nameTooLong: '名字长度不能超过50个字符！',
+                    studentIdInvalid: '学号必须为数字或留空！',
+                    studentIdRequired: '固定学号和名字模式下，学号不能为空！',
+                    studentIdExists: '学号已存在，请输入唯一学号或留空！',
+                    noNames: '所有名字都已被点过，请重置名单或添加新名字。',
+                    importInvalid: '请上传 .txt 文件，并确保使用 UTF-8 编码！',
+                    importConfirm: '导入新名单将覆盖现有导入名单，是否继续？',
+                    deleteConfirm: '确定要删除这个名字吗？',
+                    batchDeleteConfirm: '确定要删除选中的名字吗？',
+                    batchNoSelection: '请至少选择一个名字进行删除！',
+                    logsDeleteConfirm: '确定要删除所有日志吗？',
+                    historyClearConfirm: '确定要清空历史点名结果吗？',
+                    closeManageConfirm: '确定要关闭管理名单吗？',
+                    closeHistoryConfirm: '确定要关闭历史结果吗？',
+                    closeLogConfirm: '确定要关闭日志吗？',
+                    closeSettingsConfirm: '确定要关闭设置吗？未保存的更改将丢失。',
+                    closeEditConfirm: '有未保存的更改，确定要取消吗？',
+                    settingsSaved: '设置已保存！',
+                    editSaved: '编辑保存成功！',
+                    addSuccess: '添加成功！',
+                    importSuccess: '导入成功：共 {count} 条记录',
+                    importResult: '导入完成：成功 {success} 条记录，失败 {errors} 条。\n错误详情：\n{details}',
+                    tableEmpty: '没有找到匹配的名字或学号',
+                    nameInvalid: '第{row}行：名字无效',
+                    studentIdInvalidRow: '第{row}行：学号无效',
+                    studentIdRequiredRow: '第{row}行：固定学号和名字模式下，学号不能为空',
+                    studentIdDuplicate: '第{row}行：学号 {id} 重复',
+                    rollResultWithId: '点名结果',
+                    rollResult: '点名结果',
+                    rollCalled: '点名',
+                    importedList: '导入名单'
+                },
+                en: {
+                    pageTitle: 'Roll Call System',
+                    appTitle: 'Roll Call System',
+                    startRollCall: 'Start Roll Call',
+                    pauseRollCall: 'Pause Roll Call',
+                    resumeRollCall: 'Resume Roll Call',
+                    manageNames: 'Manage Names',
+                    importNames: 'Import Names',
+                    showHistory: 'View History',
+                    showLog: 'View Logs',
+                    settings: 'Settings',
+                    manageNamesTitle: 'Manage Names',
+                    addName: 'Add Name',
+                    newNamePlaceholder: 'Enter new name',
+                    searchPlaceholder: 'Search name or student ID...',
+                    batchDelete: 'Batch Delete',
+                    exportNames: 'Export Names',
+                    historyTitle: 'Roll Call History',
+                    clearHistory: 'Clear History',
+                    logTitle: 'Roll Call Logs',
+                    deleteLog: 'Delete Logs',
+                    settingsTitle: 'Settings',
+                    language: 'Language',
+                    nameSource: 'Name Source',
+                    importedOnly: 'Only imported names',
+                    builtInOnly: 'Only built-in names',
+                    mixed: 'Mixed built-in and imported names',
+                    numberingMode: 'Numbering Mode',
+                    fixedId: 'Fixed student ID and name',
+                    randomId: 'Auto-increment serial number',
+                    useLastLog: 'Use last log (exclude previously called names)',
+                    saveSettings: 'Save',
+                    editNameTitle: 'Edit Name',
+                    studentIdLabel: 'Student ID (required in fixed ID mode, must be numeric):',
+                    serialNoLabel: 'Serial Number (optional):',
+                    nameLabel: 'Name (required):',
+                    edit: 'Edit',
+                    delete: 'Delete',
+                    saveEdit: 'Save',
+                    cancelEdit: 'Cancel',
+                    nameEmpty: 'Name cannot be empty!',
+                    nameComma: 'Name cannot contain commas!',
+                    nameTooLong: 'Name cannot exceed 50 characters!',
+                    studentIdInvalid: 'Student ID must be numeric or empty!',
+                    studentIdRequired: 'Student ID is required in fixed ID mode!',
+                    studentIdExists: 'Student ID already exists, please enter a unique ID or leave empty!',
+                    noNames: 'All names have been called, please reset the list or add new names.',
+                    importInvalid: 'Please upload a .txt file with UTF-8 encoding!',
+                    importConfirm: 'Importing a new list will overwrite the existing imported names. Continue?',
+                    deleteConfirm: 'Are you sure you want to delete this name?',
+                    batchDeleteConfirm: 'Are you sure you want to delete the selected names?',
+                    batchNoSelection: 'Please select at least one name to delete!',
+                    logsDeleteConfirm: 'Are you sure you want to delete all logs?',
+                    historyClearConfirm: 'Are you sure you want to clear the roll call history?',
+                    closeManageConfirm: 'Are you sure you want to close the manage names modal?',
+                    closeHistoryConfirm: 'Are you sure you want to close the history modal?',
+                    closeLogConfirm: 'Are you sure you want to close the logs modal?',
+                    closeSettingsConfirm: 'Are you sure you want to close settings? Unsaved changes will be lost.',
+                    closeEditConfirm: 'There are unsaved changes, are you sure you want to cancel?',
+                    settingsSaved: 'Settings saved!',
+                    editSaved: 'Edit saved successfully!',
+                    addSuccess: 'Added successfully!',
+                    importSuccess: 'Import successful: {count} records',
+                    importResult: 'Import completed: {success} records succeeded, {errors} failed.\nError details:\n{details}',
+                    tableEmpty: 'No matching names or student IDs found',
+                    nameInvalid: 'Row {row}: Invalid name',
+                    studentIdInvalidRow: 'Row {row}: Invalid student ID',
+                    studentIdRequiredRow: 'Row {row}: Student ID is required in fixed ID mode',
+                    studentIdDuplicate: 'Row {row}: Student ID {id} is duplicated',
+                    rollResultWithId: 'Roll Call Result',
+                    rollResult: 'Roll Call Result',
+                    rollCalled: 'Roll Called',
+                    importedList: 'Imported List'
+                }
+            };
+
+            let currentLang = localStorage.getItem('language') || 'zh';
+            function updateLanguage(lang) {
+                currentLang = lang;
+                localStorage.setItem('language', lang);
+                const t = translations[lang];
+                document.getElementById('pageTitle').textContent = t.pageTitle;
+                document.getElementById('appTitle').textContent = t.appTitle;
+                document.getElementById('startRollCall').textContent = t.startRollCall;
+                document.getElementById('pauseRollCall').textContent = t.pauseRollCall;
+                document.getElementById('manageNamesBtn').textContent = t.manageNames;
+                document.getElementById('importNamesBtn').textContent = t.importNames;
+                document.getElementById('showHistoryBtn').textContent = t.showHistory;
+                document.getElementById('showLogBtn').textContent = t.showLog;
+                document.getElementById('settingsBtn').textContent = t.settings;
+                document.getElementById('manageNamesTitle').textContent = t.manageNamesTitle;
+                document.getElementById('addNameBtnInModal').textContent = t.addName;
+                document.getElementById('newNameInputInModal').placeholder = t.newNamePlaceholder;
+                document.getElementById('searchNameInput').placeholder = t.searchPlaceholder;
+                document.getElementById('batchDeleteBtn').textContent = t.batchDelete;
+                document.getElementById('exportNamesBtn').textContent = t.exportNames;
+                document.getElementById('historyTitle').textContent = t.historyTitle;
+                document.getElementById('clearHistoryBtn').textContent = t.clearHistory;
+                document.getElementById('logTitle').textContent = t.logTitle;
+                document.getElementById('deleteLogBtn').textContent = t.deleteLog;
+                document.getElementById('settingsTitle').textContent = t.settingsTitle;
+                document.querySelector('label[for="languageSelect"]').textContent = t.language;
+                document.querySelector('label[for="importedOnly"]').textContent = t.importedOnly;
+                document.querySelector('label[for="builtInOnly"]').textContent = t.builtInOnly;
+                document.querySelector('label[for="mixed"]').textContent = t.mixed;
+                document.querySelector('label[for="fixedId"]').textContent = t.fixedId;
+                document.querySelector('label[for="randomId"]').textContent = t.randomId;
+                document.querySelector('label[for="useLastLog"]').textContent = t.useLastLog;
+                document.getElementById('saveSettingsBtn').textContent = t.saveSettings;
+                document.getElementById('editNameTitle').textContent = t.editNameTitle;
+                document.querySelector('label[for="editStudentIdInput"]').textContent = t.studentIdLabel;
+                document.querySelector('label[for="editSerialNoInput"]').textContent = t.serialNoLabel;
+                document.querySelector('label[for="editNameInput"]').textContent = t.nameLabel;
+                document.getElementById('saveEditBtn').textContent = t.saveEdit;
+                document.getElementById('cancelEditBtn').textContent = t.cancelEdit;
+                renderTable();
+                renderHistory();
+                renderLogs();
+            }
+
+            // 内置 38 个名字，带学号和序号
+            let names = [
+                { studentId: "2021001", serialNo: "A01", name: "张三" },
+                { studentId: "2021002", serialNo: "A02", name: "李四" },
+                { studentId: "2021003", serialNo: "A03", name: "王五" },
+                { studentId: "2021004", serialNo: "A04", name: "赵六" },
+                { studentId: "2021005", serialNo: "A05", name: "孙七" },
+                { studentId: "2021006", serialNo: "A06", name: "周八" },
+                { studentId: "2021007", serialNo: "A07", name: "吴九" },
+                { studentId: "2021008", serialNo: "A08", name: "郑十" },
+                { studentId: "2021009", serialNo: "A09", name: "王十一" },
+                { studentId: "2021010", serialNo: "A10", name: "李十二" },
+                { studentId: "2021011", serialNo: "A11", name: "张十三" },
+                { studentId: "2021012", serialNo: "A12", name: "刘十四" },
+                { studentId: "2021013", serialNo: "A13", name: "陈十五" },
+                { studentId: "2021014", serialNo: "A14", name: "杨十六" },
+                { studentId: "2021015", serialNo: "A15", name: "黄十七" },
+                { studentId: "2021016", serialNo: "A16", name: "吴十八" },
+                { studentId: "2021017", serialNo: "A17", name: "林十九" },
+                { studentId: "2021018", serialNo: "A18", name: "何二十" },
+                { studentId: "2021019", serialNo: "A19", name: "高二十一" },
+                { studentId: "2021020", serialNo: "A20", name: "罗二十二" },
+                { studentId: "2021021", serialNo: "A21", name: "梁二十三" },
+                { studentId: "2021022", serialNo: "A22", name: "宋二十四" },
+                { studentId: "2021023", serialNo: "A23", name: "唐二十五" },
+                { studentId: "2021024", serialNo: "A24", name: "许二十六" },
+                { studentId: "2021025", serialNo: "A25", name: "邓二十七" },
+                { studentId: "2021026", serialNo: "A26", name: "傅二十八" },
+                { studentId: "2021027", serialNo: "A27", name: "沈二十九" },
+                { studentId: "2021028", serialNo: "A28", name: "曾三十" },
+                { studentId: "2021029", serialNo: "A29", name: "彭三十一" },
+                { studentId: "2021030", serialNo: "A30", name: "吕三十二" },
+                { studentId: "2021031", serialNo: "A31", name: "苏三十三" },
+                { studentId: "2021032", serialNo: "A32", name: "卢三十四" },
+                { studentId: "2021033", serialNo: "A33", name: "蒋三十五" },
+                { studentId: "2021034", serialNo: "A34", name: "蔡三十六" },
+                { studentId: "2021035", serialNo: "A35", name: "贾三十七" },
+                { studentId: "2021036", serialNo: "A36", name: "丁三十八" },
+                { studentId: "2021037", serialNo: "A37", name: "魏三十九" },
+                { studentId: "2021038", serialNo: "A38", name: "薛四十" }
+            ];
+            let importedNames = [];
+
+            const startRollCallBtn = document.getElementById('startRollCall');
+            const pauseRollCallBtn = document.getElementById('pauseRollCall');
+            const manageNamesBtn = document.getElementById('manageNamesBtn');
+            const importNamesBtn = document.getElementById('importNamesBtn');
+            const showHistoryBtn = document.getElementById('showHistoryBtn');
+            const showLogBtn = document.getElementById('showLogBtn');
+            const deleteLogBtn = document.getElementById('deleteLogBtn');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const languageSelect = document.getElementById('languageSelect');
+            const nameFileInput = document.getElementById('nameFileInput');
+            const manageNamesModal = document.getElementById('manageNamesModal');
+            const historyModal = document.getElementById('historyModal');
+            const logModal = document.getElementById('logModal');
+            const settingsModal = document.getElementById('settingsModal');
+            const editNameModal = document.getElementById('editNameModal');
+            const alertModal = document.getElementById('alertModal');
+            const closeManageNamesModalBtn = manageNamesModal.querySelector('.close');
+            const closeHistoryModalBtn = historyModal.querySelector('.close');
+            const closeLogModalBtn = logModal.querySelector('.close');
+            const closeSettingsModalBtn = settingsModal.querySelector('.close');
+            const closeEditNameModalBtn = editNameModal.querySelector('.close');
+            const addNameBtnInModal = document.getElementById('addNameBtnInModal');
+            const newNameInputInModal = document.getElementById('newNameInputInModal');
+            const searchNameInput = document.getElementById('searchNameInput');
+            const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+            const exportNamesBtn = document.getElementById('exportNamesBtn');
+            const nameTableInModal = document.getElementById('nameTableInModal');
+            const nameTableBodyInModal = nameTableInModal.getElementsByTagName('tbody')[0];
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const rollingName = document.getElementById('rollingName');
+            const resultList = document.getElementById('resultList');
+            const logList = document.getElementById('logList');
+            const pagination = document.getElementById('pagination');
+            const importedOnlyRadio = document.getElementById('importedOnly');
+            const builtInOnlyRadio = document.getElementById('builtInOnly');
+            const mixedRadio = document.getElementById('mixed');
+            const fixedIdCheckbox = document.getElementById('fixedId');
+            const randomIdCheckbox = document.getElementById('randomId');
+            const useLastLogCheckbox = document.getElementById('useLastLog');
+            const editStudentIdInput = document.getElementById('editStudentIdInput');
+            const editSerialNoInput = document.getElementById('editSerialNoInput');
+            const editNameInput = document.getElementById('editNameInput');
+            const saveEditBtn = document.getElementById('saveEditBtn');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const alertMessage = document.getElementById('alertMessage');
+            const alertConfirmBtn = document.getElementById('alertConfirmBtn');
+            const alertCancelBtn = document.getElementById('alertCancelBtn');
+
+            // 从 localStorage 中获取日志、历史和设置
+            let logs = JSON.parse(localStorage.getItem('rollCallLogs')) || [];
+            fixedIdCheckbox.checked = localStorage.getItem('fixedId') !== 'false';
+            randomIdCheckbox.checked = localStorage.getItem('randomId') === 'true';
+            useLastLogCheckbox.checked = localStorage.getItem('useLastLog') === 'true';
+            const savedNameSource = localStorage.getItem('nameSource') || 'mixed';
+            document.querySelector(`input[name="nameSource"][value="${savedNameSource}"]`).checked = true;
+            languageSelect.value = currentLang;
+
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let isRolling = false;
+            let rollIntervalId = null;
+            let selectedIndices = new Set();
+            const namesToShow = 5; // 每次显示的名字数量
+
+            // 防抖函数
+            function debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            // 自定义提示框
+            function showAlert(message, onConfirm, showCancel = false) {
+                alertMessage.textContent = message;
+                alertModal.style.display = 'block';
+                alertConfirmBtn.focus();
+                alertCancelBtn.style.display = showCancel ? 'inline-block' : 'none';
+                alertConfirmBtn.onclick = () => {
+                    alertModal.style.display = 'none';
+                    if (onConfirm) onConfirm(true);
+                };
+                alertCancelBtn.onclick = () => {
+                    alertModal.style.display = 'none';
+                    if (onConfirm) onConfirm(false);
+                };
+            }
+
+            function validateName(name, errorElementId) {
+                const errorElement = document.getElementById(errorElementId);
+                if (!name) {
+                    errorElement.textContent = translations[currentLang].nameEmpty;
+                    errorElement.style.display = 'block';
+                    return false;
+                }
+                if (name.includes(',')) {
+                    errorElement.textContent = translations[currentLang].nameComma;
+                    errorElement.style.display = 'block';
+                    return false;
+                }
+                if (name.length > 50) {
+                    errorElement.textContent = translations[currentLang].nameTooLong;
+                    errorElement.style.display = 'block';
+                    return false;
+                }
+                errorElement.style.display = 'none';
+                return true;
+            }
+
+            function validateStudentId(studentId, errorElementId) {
+                const errorElement = document.getElementById(errorElementId);
+                if (studentId && !/^\d*$/.test(studentId)) {
+                    errorElement.textContent = translations[currentLang].studentIdInvalid;
+                    errorElement.style.display = 'block';
+                    return false;
+                }
+                errorElement.style.display = 'none';
+                return true;
+            }
+
+            function getCurrentNames() {
+                if (importedOnlyRadio.checked) {
+                    return importedNames;
+                } else if (builtInOnlyRadio.checked) {
+                    return names;
+                } else {
+                    return names.concat(importedNames);
+                }
+            }
+
+            function renderTable() {
+                const searchQuery = searchNameInput.value.trim().toLowerCase();
+                nameTableBodyInModal.innerHTML = '';
+                const allNames = getCurrentNames();
+                const filteredNames = allNames.filter(item =>
+                    item.name.toLowerCase().includes(searchQuery) ||
+                    (item.studentId || '').toLowerCase().includes(searchQuery)
+                );
+
+                const totalPages = Math.ceil(filteredNames.length / itemsPerPage);
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const paginatedNames = filteredNames.slice(start, end);
+
+                selectedIndices.clear();
+                selectAllCheckbox.checked = false;
+
+                paginatedNames.forEach((item, index) => {
+                    const globalIndex = allNames.indexOf(item);
+                    const row = document.createElement('tr');
+                    const checkboxCell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = globalIndex;
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            selectedIndices.add(globalIndex);
+                        } else {
+                            selectedIndices.delete(globalIndex);
+                        }
+                    });
+                    checkboxCell.appendChild(checkbox);
+                    const serialNoCell = document.createElement('td');
+                    serialNoCell.textContent = randomIdCheckbox.checked ? (start + index + 1) : (item.serialNo || '');
+                    serialNoCell.dataset.label = translations[currentLang].serialNoLabel;
+                    const studentIdCell = document.createElement('td');
+                    studentIdCell.textContent = item.studentId || '';
+                    studentIdCell.dataset.label = translations[currentLang].studentIdLabel;
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = item.name;
+                    nameCell.dataset.label = translations[currentLang].nameLabel;
+                    const actionCell = document.createElement('td');
+                    actionCell.dataset.label = translations[currentLang].actions;
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = translations[currentLang].edit;
+                    editBtn.addEventListener('click', () => openEditNameModal(globalIndex));
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = translations[currentLang].delete;
+                    deleteBtn.addEventListener('click', () => deleteName(globalIndex));
+                    actionCell.appendChild(editBtn);
+                    actionCell.appendChild(deleteBtn);
+                    row.appendChild(checkboxCell);
+                    row.appendChild(serialNoCell);
+                    row.appendChild(studentIdCell);
+                    row.appendChild(nameCell);
+                    row.appendChild(actionCell);
+                    nameTableBodyInModal.appendChild(row);
+                });
+
+                if (filteredNames.length === 0) {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 5;
+                    cell.textContent = translations[currentLang].tableEmpty;
+                    cell.style.textAlign = 'center';
+                    row.appendChild(cell);
+                    nameTableBodyInModal.appendChild(row);
+                }
+
+                // 渲染分页
+                pagination.innerHTML = '';
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.textContent = i;
+                    pageBtn.disabled = i === currentPage;
+                    pageBtn.addEventListener('click', () => {
+                        currentPage = i;
+                        renderTable();
+                    });
+                    pagination.appendChild(pageBtn);
+                }
+            }
+
+            function renderHistory() {
+                resultList.innerHTML = '';
+                const history = JSON.parse(localStorage.getItem('rollCallHistory') || '[]');
+                history.forEach(text => {
+                    const p = document.createElement('p');
+                    p.textContent = text;
+                    resultList.appendChild(p);
+                });
+            }
+
+            function renderLogs() {
+                logList.innerHTML = '';
+                logs.forEach(log => {
+                    const logItem = document.createElement('p');
+                    logItem.textContent = log.studentId
+                        ? `${log.time}: ${translations[currentLang].rollCalled} - ${translations[currentLang].studentIdLabel} ${log.studentId}, ${translations[currentLang].nameLabel} ${log.name}`
+                        : log.name.startsWith(translations[currentLang].importedList)
+                            ? `${log.time}: ${log.name}`
+                            : `${log.time}: ${translations[currentLang].rollCalled} - ${translations[currentLang].nameLabel} ${log.name}`;
+                    logList.appendChild(logItem);
+                });
+            }
+
+            let isPaused = false;
+            function startRollCall() {
+                if (isRolling) return;
+                let availableItems = getCurrentNames();
+                if (useLastLogCheckbox.checked && logs.length > 0) {
+                    const selectedKeys = logs.map(log => `${log.studentId || ''}|${log.name}`);
+                    availableItems = availableItems.filter(item => !selectedKeys.includes(`${item.studentId || ''}|${item.name}`));
+                }
+
+                if (availableItems.length === 0) {
+                    showAlert(translations[currentLang].noNames);
+                    return;
+                }
+
+                isRolling = true;
+                startRollCallBtn.style.display = 'none';
+                pauseRollCallBtn.style.display = 'inline-block';
+                pauseRollCallBtn.textContent = translations[currentLang].pauseRollCall;
+                let counter = 0;
+                const maxCount = 20;
+
+                // 清空显示区域
+                rollingName.innerHTML = '';
+
+                rollIntervalId = setInterval(() => {
+                    if (!isPaused) {
+                        rollingName.innerHTML = '';
+                        const shuffledItems = availableItems.sort(() => Math.random() - 0.5);
+                        const displayItems = shuffledItems.slice(0, Math.min(namesToShow, availableItems.length));
+
+                        displayItems.forEach((item, index) => {
+                            const nameDiv = document.createElement('div');
+                            nameDiv.className = 'name-item';
+                            nameDiv.textContent = item.studentId ? `${item.studentId} ${item.name}` : item.name;
+                            if (index === 0) {
+                                nameDiv.classList.add('highlight');
+                            }
+                            rollingName.appendChild(nameDiv);
+                        });
+
+                        counter++;
+                        if (counter >= maxCount) {
+                            clearInterval(rollIntervalId);
+                            isRolling = false;
+                            startRollCallBtn.style.display = 'inline-block';
+                            pauseRollCallBtn.style.display = 'none';
+
+                            // 显示最终结果
+                            const finalIndex = Math.floor(Math.random() * availableItems.length);
+                            const finalItem = availableItems[finalIndex];
+                            rollingName.innerHTML = '';
+                            const finalDiv = document.createElement('div');
+                            finalDiv.className = 'name-item final';
+                            finalDiv.textContent = finalItem.studentId ? `${finalItem.studentId} ${finalItem.name}` : finalItem.name;
+                            rollingName.appendChild(finalDiv);
+
+                            const resultItem = document.createElement('p');
+                            resultItem.textContent = finalItem.studentId
+                                ? `${translations[currentLang].rollResultWithId}: ${finalItem.studentId}, ${translations[currentLang].nameLabel} ${finalItem.name}`
+                                : `${translations[currentLang].rollResult}: ${finalItem.name}`;
+                            resultList.appendChild(resultItem);
+                            localStorage.setItem('rollCallHistory', JSON.stringify([...resultList.children].map(p => p.textContent)));
+
+                            // 记录日志
+                            const now = new Date();
+                            const log = {
+                                time: now.toLocaleString(),
+                                studentId: finalItem.studentId || '',
+                                name: finalItem.name
+                            };
+                            logs.push(log);
+                            localStorage.setItem('rollCallLogs', JSON.stringify(logs));
+                        }
+                    }
+                }, 150); // 放慢动画速度以确保可读性
+            }
+
+            function pauseRollCall() {
+                isPaused = !isPaused;
+                pauseRollCallBtn.textContent = isPaused ? translations[currentLang].resumeRollCall : translations[currentLang].pauseRollCall;
+            }
+
+            function openManageNamesModal() {
+                manageNamesModal.style.display = 'block';
+                searchNameInput.value = '';
+                currentPage = 1;
+                selectedIndices.clear();
+                selectAllCheckbox.checked = false;
+                renderTable();
+                newNameInputInModal.focus();
+            }
+
+            function closeManageNamesModal() {
+                showAlert(translations[currentLang].closeManageConfirm, (confirmed) => {
+                    if (confirmed) {
+                        manageNamesModal.style.display = 'none';
+                    }
+                }, true);
+            }
+
+            function openHistoryModal() {
+                renderHistory();
+                historyModal.style.display = 'block';
+            }
+
+            function closeHistoryModal() {
+                showAlert(translations[currentLang].closeHistoryConfirm, (confirmed) => {
+                    if (confirmed) {
+                        historyModal.style.display = 'none';
+                    }
+                }, true);
+            }
+
+            function openLogModal() {
+                renderLogs();
+                logModal.style.display = 'block';
+            }
+
+            function closeLogModal() {
+                showAlert(translations[currentLang].closeLogConfirm, (confirmed) => {
+                    if (confirmed) {
+                        logModal.style.display = 'none';
+                    }
+                }, true);
+            }
+
+            function openSettingsModal() {
+                settingsModal.style.display = 'block';
+                languageSelect.focus();
+            }
+
+            function closeSettingsModal() {
+                const hasChanges =
+                    fixedIdCheckbox.checked !== (localStorage.getItem('fixedId') !== 'false') ||
+                    randomIdCheckbox.checked !== (localStorage.getItem('randomId') === 'true') ||
+                    useLastLogCheckbox.checked !== (localStorage.getItem('useLastLog') === 'true') ||
+                    document.querySelector('input[name="nameSource"]:checked').value !== localStorage.getItem('nameSource') ||
+                    languageSelect.value !== localStorage.getItem('language');
+                if (hasChanges) {
+                    showAlert(translations[currentLang].closeSettingsConfirm, (confirmed) => {
+                        if (confirmed) {
+                            settingsModal.style.display = 'none';
+                        }
+                    }, true);
+                } else {
+                    settingsModal.style.display = 'none';
+                }
+            }
+
+            let editIndex = null;
+
+            function openEditNameModal(index) {
+                editIndex = index;
+                const allNames = getCurrentNames();
+                const item = allNames[index];
+                editStudentIdInput.value = item.studentId || '';
+                editSerialNoInput.value = item.serialNo || '';
+                editNameInput.value = item.name;
+                editNameModal.style.display = 'block';
+                editNameInput.focus();
+            }
+
+            function closeEditNameModal() {
+                const currentItem = editIndex !== null ? getCurrentNames()[editIndex] : null;
+                if (currentItem) {
+                    const hasChanges =
+                        editStudentIdInput.value.trim() !== (currentItem.studentId || '') ||
+                        editSerialNoInput.value.trim() !== (currentItem.serialNo || '') ||
+                        editNameInput.value.trim() !== currentItem.name;
+                    if (hasChanges) {
+                        showAlert(translations[currentLang].closeEditConfirm, (confirmed) => {
+                            if (confirmed) {
+                                editNameModal.style.display = 'none';
+                                editIndex = null;
+                            }
+                        }, true);
+                        return;
+                    }
+                }
+                editNameModal.style.display = 'none';
+                editIndex = null;
+            }
+
+            function saveEditName() {
+                const newName = editNameInput.value.trim();
+                if (!validateName(newName, 'editNameError')) {
+                    return;
+                }
+                let studentId = editStudentIdInput.value.trim();
+                let serialNo = editSerialNoInput.value.trim();
+                const allNames = getCurrentNames();
+
+                // 验证学号
+                if (!validateStudentId(studentId, 'editStudentIdError')) {
+                    return;
+                }
+                if (fixedIdCheckbox.checked && !studentId) {
+                    document.getElementById('editStudentIdError').textContent = translations[currentLang].studentIdRequired;
+                    document.getElementById('editStudentIdError').style.display = 'block';
+                    return;
+                }
+                if (studentId && allNames.some((item, idx) => idx !== editIndex && item.studentId === studentId)) {
+                    document.getElementById('editStudentIdError').textContent = translations[currentLang].studentIdExists;
+                    document.getElementById('editStudentIdError').style.display = 'block';
+                    return;
+                }
+
+                const newItem = { studentId, serialNo, name: newName };
+                if (importedOnlyRadio.checked) {
+                    importedNames[editIndex] = newItem;
+                } else if (builtInOnlyRadio.checked) {
+                    names[editIndex] = newItem;
+                } else {
+                    if (editIndex < names.length) {
+                        names[editIndex] = newItem;
+                    } else {
+                        importedNames[editIndex - names.length] = newItem;
+                    }
+                }
+                renderTable();
+                closeEditNameModal();
+                showAlert(translations[currentLang].editSaved);
+            }
+
+            function addName() {
+                const newName = newNameInputInModal.value.trim();
+                if (!validateName(newName, 'newNameError')) {
+                    return;
+                }
+                let studentId = '';
+                let serialNo = '';
+                if (fixedIdCheckbox.checked) {
+                    studentId = prompt(translations[currentLang].studentIdLabel, '');
+                    if (!studentId) {
+                        showAlert(translations[currentLang].studentIdRequired);
+                        return;
+                    }
+                    if (!validateStudentId(studentId, 'newNameError')) {
+                        return;
+                    }
+                    const allNames = getCurrentNames();
+                    if (allNames.some(item => item.studentId === studentId)) {
+                        showAlert(translations[currentLang].studentIdExists);
+                        return;
+                    }
+                } else {
+                    studentId = prompt(translations[currentLang].studentIdLabel.slice(0, -1) + ' (optional):', '') || '';
+                    if (!validateStudentId(studentId, 'newNameError')) {
+                        return;
+                    }
+                    const allNames = getCurrentNames();
+                    if (studentId && allNames.some(item => item.studentId === studentId)) {
+                        showAlert(translations[currentLang].studentIdExists);
+                        return;
+                    }
+                }
+                serialNo = prompt(translations[currentLang].serialNoLabel.slice(0, -1) + ' (optional):', '') || '';
+                const newItem = { studentId, serialNo, name: newName };
+                if (importedOnlyRadio.checked) {
+                    importedNames.push(newItem);
+                } else {
+                    names.push(newItem);
+                }
+                renderTable();
+                newNameInputInModal.value = '';
+                showAlert(translations[currentLang].addSuccess);
+            }
+
+            function deleteName(index) {
+                showAlert(translations[currentLang].deleteConfirm, (confirmed) => {
+                    if (confirmed) {
+                        const allNames = getCurrentNames();
+                        if (importedOnlyRadio.checked) {
+                            importedNames.splice(index, 1);
+                        } else if (builtInOnlyRadio.checked) {
+                            names.splice(index, 1);
+                        } else {
+                            if (index < names.length) {
+                                names.splice(index, 1);
+                            } else {
+                                importedNames.splice(index - names.length, 1);
+                            }
+                        }
+                        renderTable();
+                    }
+                }, true);
+            }
+
+            function batchDelete() {
+                if (selectedIndices.size === 0) {
+                    showAlert(translations[currentLang].batchNoSelection);
+                    return;
+                }
+                showAlert(translations[currentLang].batchDeleteConfirm, (confirmed) => {
+                    if (confirmed) {
+                        const allNames = getCurrentNames();
+                        const indices = Array.from(selectedIndices).sort((a, b) => b - a);
+                        indices.forEach(index => {
+                            if (importedOnlyRadio.checked) {
+                                importedNames.splice(index, 1);
+                            } else if (builtInOnlyRadio.checked) {
+                                names.splice(index, 1);
+                            } else {
+                                if (index < names.length) {
+                                    names.splice(index, 1);
+                                } else {
+                                    importedNames.splice(index - names.length, 1);
+                                }
+                            }
+                        });
+                        selectedIndices.clear();
+                        selectAllCheckbox.checked = false;
+                        renderTable();
+                    }
+                }, true);
+            }
+
+            function exportNames() {
+                const allNames = getCurrentNames();
+                const text = allNames.map(item => `${item.studentId || ''},${item.serialNo || ''},${item.name}`).join('\n');
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'names.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function importNames() {
+                nameFileInput.click();
+            }
+
+            function deleteLogs() {
+                showAlert(translations[currentLang].logsDeleteConfirm, (confirmed) => {
+                    if (confirmed) {
+                        logs = [];
+                        localStorage.removeItem('rollCallLogs');
+                        renderLogs();
+                    }
+                }, true);
+            }
+
+            function clearHistory() {
+                showAlert(translations[currentLang].historyClearConfirm, (confirmed) => {
+                    if (confirmed) {
+                        resultList.innerHTML = '';
+                        localStorage.removeItem('rollCallHistory');
+                    }
+                }, true);
+            }
+
+            nameFileInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    if (!file.name.endsWith('.txt')) {
+                        showAlert(translations[currentLang].importInvalid);
+                        return;
+                    }
+                    if (importedNames.length > 0) {
+                        showAlert(translations[currentLang].importConfirm, (confirmed) => {
+                            if (confirmed) {
+                                processFile(file);
+                            }
+                        }, true);
+                    } else {
+                        processFile(file);
+                    }
+                }
+            });
+
+            function processFile(file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    importedNames = []; // 清空现有导入名单
+                    const lines = e.target.result.split('\n').map(line => line.trim()).filter(line => line);
+                    const errors = [];
+                    const successCount = { count: 0 };
+
+                    lines.forEach((line, index) => {
+                        const parts = line.match(/(?:"[^"]*"|[^,]+)(?:,|$)/g)?.map(item => item.trim().replace(/^"|"$/g, '')) || [];
+                        let studentId = '';
+                        let serialNo = '';
+                        let name = '';
+
+                        if (parts.length >= 3) {
+                            studentId = parts[0] || '';
+                            serialNo = parts[1] || '';
+                            name = parts.slice(2).join(',').trim();
+                        } else if (parts.length === 2) {
+                            studentId = parts[0] || '';
+                            name = parts[1];
+                        } else if (parts.length === 1) {
+                            name = parts[0];
+                        } else {
+                            errors.push(translations[currentLang].emptyRow.replace('{row}', index + 1));
+                            return;
+                        }
+
+                        if (!validateName(name, 'newNameError')) {
+                            errors.push(translations[currentLang].nameInvalid.replace('{row}', index + 1));
+                            return;
+                        }
+                        if (!validateStudentId(studentId, 'newNameError')) {
+                            errors.push(translations[currentLang].studentIdInvalidRow.replace('{row}', index + 1));
+                            return;
+                        }
+
+                        if (fixedIdCheckbox.checked && !studentId) {
+                            errors.push(translations[currentLang].studentIdRequiredRow.replace('{row}', index + 1));
+                        } else if (studentId && (importedNames.some(item => item.studentId === studentId) || names.some(item => item.studentId === studentId))) {
+                            errors.push(translations[currentLang].studentIdDuplicate.replace('{row}', index + 1).replace('{id}', studentId));
+                        } else {
+                            importedNames.push({ studentId, serialNo, name });
+                            successCount.count++;
+                        }
+                    });
+
+                    // 显示导入结果
+                    if (errors.length > 0) {
+                        showAlert(translations[currentLang].importResult
+                            .replace('{success}', successCount.count)
+                            .replace('{errors}', errors.length)
+                            .replace('{details}', errors.join('\n')));
+                    } else {
+                        showAlert(translations[currentLang].importSuccess.replace('{count}', successCount.count));
+                    }
+
+                    renderTable();
+
+                    // 记录导入日志
+                    const now = new Date();
+                    logs.push({
+                        time: now.toLocaleString(),
+                        studentId: '',
+                        name: `${translations[currentLang].importedList}（${translations[currentLang].importResult.replace('{success}', successCount.count).replace('{errors}', errors.length).replace('{details}', '')}）`
+                    });
+                    localStorage.setItem('rollCallLogs', JSON.stringify(logs));
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            // 事件监听器
+            startRollCallBtn.addEventListener('click', startRollCall);
+            pauseRollCallBtn.addEventListener('click', pauseRollCall);
+            manageNamesBtn.addEventListener('click', openManageNamesModal);
+            showHistoryBtn.addEventListener('click', openHistoryModal);
+            showLogBtn.addEventListener('click', openLogModal);
+            settingsBtn.addEventListener('click', openSettingsModal);
+            languageSelect.addEventListener('change', () => updateLanguage(languageSelect.value));
+            closeManageNamesModalBtn.addEventListener('click', closeManageNamesModal);
+            closeHistoryModalBtn.addEventListener('click', closeHistoryModal);
+            closeLogModalBtn.addEventListener('click', closeLogModal);
+            closeSettingsModalBtn.addEventListener('click', closeSettingsModal);
+            closeEditNameModalBtn.addEventListener('click', closeEditNameModal);
+            addNameBtnInModal.addEventListener('click', addName);
+            importNamesBtn.addEventListener('click', importNames);
+            batchDeleteBtn.addEventListener('click', batchDelete);
+            exportNamesBtn.addEventListener('click', exportNames);
+            deleteLogBtn.addEventListener('click', deleteLogs);
+            saveEditBtn.addEventListener('click', saveEditName);
+            cancelEditBtn.addEventListener('click', closeEditNameModal);
+            clearHistoryBtn.addEventListener('click', clearHistory);
+            searchNameInput.addEventListener('input', debounce(() => {
+                currentPage = 1;
+                renderTable();
+            }, 300));
+            newNameInputInModal.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addName();
+            });
+            fixedIdCheckbox.addEventListener('change', () => {
+                renderTable();
+            });
+            randomIdCheckbox.addEventListener('change', () => {
+                renderTable();
+            });
+            useLastLogCheckbox.addEventListener('change', () => {
+                localStorage.setItem('useLastLog', useLastLogCheckbox.checked);
+            });
+            saveSettingsBtn.addEventListener('click', () => {
+                localStorage.setItem('fixedId', fixedIdCheckbox.checked);
+                localStorage.setItem('randomId', randomIdCheckbox.checked);
+                localStorage.setItem('useLastLog', useLastLogCheckbox.checked);
+                localStorage.setItem('nameSource', document.querySelector('input[name="nameSource"]:checked').value);
+                localStorage.setItem('language', languageSelect.value);
+                updateLanguage(languageSelect.value);
+                renderTable();
+                closeSettingsModal();
+                showAlert(translations[currentLang].settingsSaved);
+            });
+            selectAllCheckbox.addEventListener('change', () => {
+                const checkboxes = nameTableBodyInModal.querySelectorAll('input[type="checkbox"]');
+                const allNames = getCurrentNames();
+                const filteredNames = allNames.filter(item =>
+                    item.name.toLowerCase().includes(searchNameInput.value.trim().toLowerCase()) ||
+                    (item.studentId || '').toLowerCase().includes(searchNameInput.value.trim().toLowerCase())
+                );
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                checkboxes.forEach((checkbox, index) => {
+                    const globalIndex = allNames.indexOf(filteredNames[start + index]);
+                    checkbox.checked = selectAllCheckbox.checked;
+                    if (checkbox.checked) {
+                        selectedIndices.add(globalIndex);
+                    } else {
+                        selectedIndices.delete(globalIndex);
+                    }
+                });
+            });
+
+            // 实时验证输入
+            newNameInputInModal.addEventListener('input', () => validateName(newNameInputInModal.value, 'newNameError'));
+            editNameInput.addEventListener('input', () => validateName(editNameInput.value, 'editNameError'));
+            editStudentIdInput.addEventListener('input', () => validateStudentId(editStudentIdInput.value, 'editStudentIdError'));
+
+            // 模态框键盘支持
+            document.querySelectorAll('.modal .close').forEach(closeBtn => {
+                closeBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        closeBtn.click();
+                    }
+                });
+            });
+
+            // Esc 键关闭模态框
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (alertModal.style.display === 'block') {
+                        alertModal.style.display = 'none';
+                    } else if (editNameModal.style.display === 'block') {
+                        closeEditNameModal();
+                    } else if (settingsModal.style.display === 'block') {
+                        closeSettingsModal();
+                    } else if (logModal.style.display === 'block') {
+                        closeLogModal();
+                    } else if (historyModal.style.display === 'block') {
+                        closeHistoryModal();
+                    } else if (manageNamesModal.style.display === 'block') {
+                        closeManageNamesModal();
+                    }
+                }
+            });
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', function (event) {
+                if (event.target == manageNamesModal) {
+                    closeManageNamesModal();
+                }
+                if (event.target == historyModal) {
+                    closeHistoryModal();
+                }
+                if (event.target == logModal) {
+                    closeLogModal();
+                }
+                if (event.target == settingsModal) {
+                    closeSettingsModal();
+                }
+                if (event.target == editNameModal) {
+                    closeEditNameModal();
+                }
+                if (event.target == alertModal) {
+                    alertModal.style.display = 'none';
+                }
+            });
+
+            // 初始化语言
+            updateLanguage(currentLang);
+        });
+    </script>
+</body>
+</html>
